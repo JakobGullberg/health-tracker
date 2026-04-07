@@ -22,8 +22,10 @@ public class WorkoutService {
     private final WorkoutRepository workoutRepository;
     private final UserRepository userRepository;
 
-    public List<WorkoutResponse> getAllByUser(Long userId) {
-        return workoutRepository.findByUserIdOrderByDateDesc(userId)
+    public List<WorkoutResponse> getAllByUser(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return workoutRepository.findByUserIdOrderByDateDesc(user.getId())
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -35,9 +37,9 @@ public class WorkoutService {
         return toResponse(workout);
     }
 
-    public WorkoutResponse create(Long userId, WorkoutRequest request) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User", userId));
+    public WorkoutResponse create(String email, WorkoutRequest request) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         Workout workout = Workout.builder()
                 .workoutType(request.getWorkoutType())

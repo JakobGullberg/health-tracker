@@ -22,8 +22,10 @@ public class WellbeingLogService {
     private final WellbeingLogRepository wellbeingLogRepository;
     private final UserRepository userRepository;
 
-    public List<WellbeingLogResponse> getAllByUser(Long userId) {
-        return wellbeingLogRepository.findByUserIdOrderByDateDesc(userId)
+    public List<WellbeingLogResponse> getAllByUser(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return wellbeingLogRepository.findByUserIdOrderByDateDesc(user.getId())
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -35,9 +37,9 @@ public class WellbeingLogService {
         return toResponse(log);
     }
 
-    public WellbeingLogResponse create(Long userId, WellbeingLogRequest request) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User", userId));
+    public WellbeingLogResponse create(String email, WellbeingLogRequest request) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         WellbeingLog log = WellbeingLog.builder()
                 .moodRating(request.getMoodRating())

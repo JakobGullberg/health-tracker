@@ -22,8 +22,10 @@ public class NutritionLogService {
     private final NutritionLogRepository nutritionLogRepository;
     private final UserRepository userRepository;
 
-    public List<NutritionLogResponse> getAllByUser(Long userId) {
-        return nutritionLogRepository.findByUserIdOrderByDateDesc(userId)
+    public List<NutritionLogResponse> getAllByUser(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return nutritionLogRepository.findByUserIdOrderByDateDesc(user.getId())
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -35,9 +37,9 @@ public class NutritionLogService {
         return toResponse(log);
     }
 
-    public NutritionLogResponse create(Long userId, NutritionLogRequest request) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User", userId));
+    public NutritionLogResponse create(String email, NutritionLogRequest request) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         NutritionLog log = NutritionLog.builder()
                 .mealType(request.getMealType())
