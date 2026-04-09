@@ -66,8 +66,14 @@ docker start healthtracker-db
 
 ```bash
 cd backend
-export JAVA_HOME=$(/usr/libexec/java_home -v 17)   # macOS
+
+# macOS/Linux
+export JAVA_HOME=$(/usr/libexec/java_home -v 17)
 ./mvnw spring-boot:run
+
+# Windows (PowerShell)
+set JAVA_HOME=C:\Program Files\Eclipse Adoptium\jdk-17
+mvnw.cmd spring-boot:run
 ```
 
 The API runs at **http://localhost:8080**.
@@ -86,7 +92,13 @@ The app runs at **http://localhost:5173**.
 
 ```bash
 cd backend
+
+# macOS/Linux
 JAVA_HOME=$(/usr/libexec/java_home -v 17) ./mvnw test
+
+# Windows (PowerShell)
+set JAVA_HOME=C:\Program Files\Eclipse Adoptium\jdk-17
+mvnw.cmd test
 ```
 
 ## API Endpoints
