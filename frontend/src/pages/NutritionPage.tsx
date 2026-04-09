@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { api } from "../services/api";
-import Modal from "../components/Modal";
+import Modal from "../components/Modal/Modal";
+import NotificationToast from "../components/NotificationToast/NotificationToast";
+import { useNotificationToast } from "../hooks/useNotificationToast";
 import type { NutritionLogResponse, NutritionForm } from "../types";
 import "./DataPage.css";
 
@@ -24,6 +26,8 @@ export default function NutritionPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<NutritionLogResponse | null>(null);
   const [form, setForm] = useState<NutritionForm>(emptyForm);
+  const { notification, showSuccess, showError, dismiss } =
+    useNotificationToast();
 
   const fetchLogs = async () => {
     try {
@@ -74,19 +78,30 @@ export default function NutritionPage() {
       date: form.date,
     };
 
-    if (editing) {
-      await api.put(`/nutrition-logs/${editing.id}`, body);
-    } else {
-      await api.post("/nutrition-logs", body);
+    try {
+      if (editing) {
+        await api.put(`/nutrition-logs/${editing.id}`, body);
+        showSuccess("Meal updated successfully.");
+      } else {
+        await api.post("/nutrition-logs", body);
+        showSuccess("Meal added successfully.");
+      }
+      setModalOpen(false);
+      fetchLogs();
+    } catch (err) {
+      showError(err instanceof Error ? err.message : "Failed to save meal.");
     }
-
-    setModalOpen(false);
-    fetchLogs();
   };
 
   const handleDelete = async (id: number) => {
-    await api.delete(`/nutrition-logs/${id}`);
-    fetchLogs();
+    if (!window.confirm("Are you sure you want to delete this meal?")) return;
+    try {
+      await api.delete(`/nutrition-logs/${id}`);
+      showSuccess("Meal deleted.");
+      fetchLogs();
+    } catch (err) {
+      showError(err instanceof Error ? err.message : "Failed to delete meal.");
+    }
   };
 
   if (loading) {
@@ -95,6 +110,7 @@ export default function NutritionPage() {
 
   return (
     <div>
+      <NotificationToast notification={notification} onDismiss={dismiss} />
       <div className="page-header">
         <h1 className="page-title">Nutrition</h1>
         <button className="btn btn--primary" onClick={openAdd}>

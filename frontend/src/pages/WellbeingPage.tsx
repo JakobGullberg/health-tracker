@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { api } from "../services/api";
-import Modal from "../components/Modal";
+import Modal from "../components/Modal/Modal";
+import NotificationToast from "../components/NotificationToast/NotificationToast";
+import { useNotificationToast } from "../hooks/useNotificationToast";
 import type { WellbeingLogResponse, WellbeingForm } from "../types";
 import "./DataPage.css";
 
@@ -18,6 +20,8 @@ export default function WellbeingPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<WellbeingLogResponse | null>(null);
   const [form, setForm] = useState<WellbeingForm>(emptyForm);
+  const { notification, showSuccess, showError, dismiss } =
+    useNotificationToast();
 
   const fetchLogs = async () => {
     try {
@@ -62,19 +66,35 @@ export default function WellbeingPage() {
       date: form.date,
     };
 
-    if (editing) {
-      await api.put(`/wellbeing-logs/${editing.id}`, body);
-    } else {
-      await api.post("/wellbeing-logs", body);
+    try {
+      if (editing) {
+        await api.put(`/wellbeing-logs/${editing.id}`, body);
+        showSuccess("Check-in updated successfully.");
+      } else {
+        await api.post("/wellbeing-logs", body);
+        showSuccess("Check-in added successfully.");
+      }
+      setModalOpen(false);
+      fetchLogs();
+    } catch (err) {
+      showError(
+        err instanceof Error ? err.message : "Failed to save check-in.",
+      );
     }
-
-    setModalOpen(false);
-    fetchLogs();
   };
 
   const handleDelete = async (id: number) => {
-    await api.delete(`/wellbeing-logs/${id}`);
-    fetchLogs();
+    if (!window.confirm("Are you sure you want to delete this check-in?"))
+      return;
+    try {
+      await api.delete(`/wellbeing-logs/${id}`);
+      showSuccess("Check-in deleted.");
+      fetchLogs();
+    } catch (err) {
+      showError(
+        err instanceof Error ? err.message : "Failed to delete check-in.",
+      );
+    }
   };
 
   if (loading) {
@@ -83,6 +103,7 @@ export default function WellbeingPage() {
 
   return (
     <div>
+      <NotificationToast notification={notification} onDismiss={dismiss} />
       <div className="page-header">
         <h1 className="page-title">Wellbeing</h1>
         <button className="btn btn--primary" onClick={openAdd}>

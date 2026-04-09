@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { api } from "../services/api";
-import Modal from "../components/Modal";
+import Modal from "../components/Modal/Modal";
+import NotificationToast from "../components/NotificationToast/NotificationToast";
+import { useNotificationToast } from "../hooks/useNotificationToast";
 import type { SleepLogResponse, SleepForm } from "../types";
 import "./DataPage.css";
 
@@ -19,6 +21,8 @@ export default function SleepPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<SleepLogResponse | null>(null);
   const [form, setForm] = useState<SleepForm>(emptyForm);
+  const { notification, showSuccess, showError, dismiss } =
+    useNotificationToast();
 
   const fetchSleepLogs = async () => {
     try {
@@ -67,19 +71,35 @@ export default function SleepPage() {
       date: form.date,
     };
 
-    if (editing) {
-      await api.put(`/sleep-logs/${editing.id}`, body);
-    } else {
-      await api.post("/sleep-logs", body);
+    try {
+      if (editing) {
+        await api.put(`/sleep-logs/${editing.id}`, body);
+        showSuccess("Sleep log updated successfully.");
+      } else {
+        await api.post("/sleep-logs", body);
+        showSuccess("Sleep log added successfully.");
+      }
+      setModalOpen(false);
+      fetchSleepLogs();
+    } catch (err) {
+      showError(
+        err instanceof Error ? err.message : "Failed to save sleep log.",
+      );
     }
-
-    setModalOpen(false);
-    fetchSleepLogs();
   };
 
   const handleDelete = async (id: number) => {
-    await api.delete(`/sleep-logs/${id}`);
-    fetchSleepLogs();
+    if (!window.confirm("Are you sure you want to delete this sleep log?"))
+      return;
+    try {
+      await api.delete(`/sleep-logs/${id}`);
+      showSuccess("Sleep log deleted.");
+      fetchSleepLogs();
+    } catch (err) {
+      showError(
+        err instanceof Error ? err.message : "Failed to delete sleep log.",
+      );
+    }
   };
 
   if (loading) {
@@ -88,6 +108,7 @@ export default function SleepPage() {
 
   return (
     <div>
+      <NotificationToast notification={notification} onDismiss={dismiss} />
       <div className="page-header">
         <h1 className="page-title">Sleep</h1>
         <button className="btn btn--primary" onClick={openAdd}>

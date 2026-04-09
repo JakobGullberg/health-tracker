@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { api } from "../services/api";
-import Modal from "../components/Modal";
+import Modal from "../components/Modal/Modal";
+import NotificationToast from "../components/NotificationToast/NotificationToast";
+import { useNotificationToast } from "../hooks/useNotificationToast";
 import type { WorkoutResponse, WorkoutForm } from "../types";
 import "./DataPage.css";
 
@@ -33,6 +35,8 @@ export default function WorkoutsPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<WorkoutResponse | null>(null);
   const [form, setForm] = useState<WorkoutForm>(emptyForm);
+  const { notification, showSuccess, showError, dismiss } =
+    useNotificationToast();
 
   const fetchWorkouts = async () => {
     try {
@@ -79,19 +83,33 @@ export default function WorkoutsPage() {
       date: form.date,
     };
 
-    if (editing) {
-      await api.put(`/workouts/${editing.id}`, body);
-    } else {
-      await api.post("/workouts", body);
+    try {
+      if (editing) {
+        await api.put(`/workouts/${editing.id}`, body);
+        showSuccess("Workout updated successfully.");
+      } else {
+        await api.post("/workouts", body);
+        showSuccess("Workout added successfully.");
+      }
+      setModalOpen(false);
+      fetchWorkouts();
+    } catch (err) {
+      showError(err instanceof Error ? err.message : "Failed to save workout.");
     }
-
-    setModalOpen(false);
-    fetchWorkouts();
   };
 
   const handleDelete = async (id: number) => {
-    await api.delete(`/workouts/${id}`);
-    fetchWorkouts();
+    if (!window.confirm("Are you sure you want to delete this workout?"))
+      return;
+    try {
+      await api.delete(`/workouts/${id}`);
+      showSuccess("Workout deleted.");
+      fetchWorkouts();
+    } catch (err) {
+      showError(
+        err instanceof Error ? err.message : "Failed to delete workout.",
+      );
+    }
   };
 
   if (loading) {
@@ -100,6 +118,7 @@ export default function WorkoutsPage() {
 
   return (
     <div>
+      <NotificationToast notification={notification} onDismiss={dismiss} />
       <div className="page-header">
         <h1 className="page-title">Workouts</h1>
         <button className="btn btn--primary" onClick={openAdd}>
