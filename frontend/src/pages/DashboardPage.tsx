@@ -2,46 +2,13 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../services/api";
+import type {
+  WorkoutResponse,
+  SleepLogResponse,
+  NutritionLogResponse,
+  WellbeingLogResponse,
+} from "../types";
 import "./DashboardPage.css";
-
-interface WorkoutResponse {
-  id: number;
-  workoutType: string;
-  durationMinutes: number;
-  caloriesBurned: number | null;
-  notes: string | null;
-  date: string;
-}
-
-interface SleepLogResponse {
-  id: number;
-  bedtime: string;
-  wakeTime: string;
-  durationHours: number;
-  sleepQuality: number;
-  notes: string | null;
-  date: string;
-}
-
-interface NutritionLogResponse {
-  id: number;
-  mealType: string;
-  description: string;
-  calories: number | null;
-  proteinGrams: number | null;
-  carbsGrams: number | null;
-  fatGrams: number | null;
-  date: string;
-}
-
-interface WellbeingLogResponse {
-  id: number;
-  moodRating: number;
-  stressLevel: number;
-  energyLevel: number;
-  notes: string | null;
-  date: string;
-}
 
 function getGreeting(): string {
   const hour = new Date().getHours();

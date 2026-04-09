@@ -1,24 +1,8 @@
 import { useEffect, useState } from "react";
 import { api } from "../services/api";
 import Modal from "../components/Modal";
+import type { WorkoutResponse, WorkoutForm } from "../types";
 import "./DataPage.css";
-
-interface WorkoutResponse {
-  id: number;
-  workoutType: string;
-  durationMinutes: number;
-  caloriesBurned: number | null;
-  notes: string | null;
-  date: string;
-}
-
-interface WorkoutForm {
-  workoutType: string;
-  durationMinutes: number;
-  caloriesBurned: string;
-  notes: string;
-  date: string;
-}
 
 const TYPES = [
   "RUNNING",
