@@ -145,6 +145,9 @@ export default function DashboardPage() {
                 {dayWorkouts.length} workout{dayWorkouts.length > 1 ? "s" : ""}{" "}
                 · {dayWorkouts.reduce((a, w) => a + w.durationMinutes, 0)} min
               </p>
+              <p className="summary-card-stat">
+                {dayCaloriesBurned} kcal burned
+              </p>
             </>
           ) : (
             <p className="summary-card-detail">No workouts this day</p>
