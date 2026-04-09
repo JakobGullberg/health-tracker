@@ -21,6 +21,9 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
+  const today = new Date().toISOString().split("T")[0];
+  const [selectedDate, setSelectedDate] = useState(today);
+
   const [workouts, setWorkouts] = useState<WorkoutResponse[]>([]);
   const [sleepLogs, setSleepLogs] = useState<SleepLogResponse[]>([]);
   const [nutritionLogs, setNutritionLogs] = useState<NutritionLogResponse[]>(
@@ -40,10 +43,14 @@ export default function DashboardPage() {
           api.get<NutritionLogResponse[]>("/nutrition-logs"),
           api.get<WellbeingLogResponse[]>("/wellbeing-logs"),
         ]);
-        setWorkouts(w);
-        setSleepLogs(s);
-        setNutritionLogs(n);
-        setWellbeingLogs(wb);
+        const byDateDesc = <T extends { date: string; id: number }>(
+          a: T,
+          b: T,
+        ) => b.date.localeCompare(a.date) || b.id - a.id;
+        setWorkouts(w.sort(byDateDesc));
+        setSleepLogs(s.sort(byDateDesc));
+        setNutritionLogs(n.sort(byDateDesc));
+        setWellbeingLogs(wb.sort(byDateDesc));
       } catch {
         // silently fail — cards will show empty state
       } finally {
@@ -57,38 +64,68 @@ export default function DashboardPage() {
     return <p className="dashboard-loading">Loading your data...</p>;
   }
 
-  const today = new Date().toISOString().split("T")[0];
+  // Filter by selected date
+  const dayWorkouts = workouts.filter((w) => w.date === selectedDate);
+  const daySleep = sleepLogs.filter((s) => s.date === selectedDate);
+  const dayNutrition = nutritionLogs.filter((n) => n.date === selectedDate);
+  const dayWellbeing = wellbeingLogs.find((w) => w.date === selectedDate);
 
-  // Workouts summary
-  const startOfWeek = new Date();
-  startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
-  const weekStr = startOfWeek.toISOString().split("T")[0];
-  const weekWorkouts = workouts.filter((w) => w.date >= weekStr);
-  const latestWorkout = workouts.length > 0 ? workouts[0] : null;
+  // Nutrition totals for the day
+  const dayCaloriesEaten = dayNutrition.reduce(
+    (a, n) => a + (n.calories || 0),
+    0,
+  );
 
-  // Sleep summary
-  const latestSleep = sleepLogs.length > 0 ? sleepLogs[0] : null;
-  const avgQuality =
-    sleepLogs.length > 0
-      ? (
-          sleepLogs.slice(0, 7).reduce((a, s) => a + s.sleepQuality, 0) /
-          Math.min(sleepLogs.length, 7)
-        ).toFixed(1)
-      : null;
+  // Workout calories burned for the day
+  const dayCaloriesBurned = dayWorkouts.reduce(
+    (a, w) => a + (w.caloriesBurned || 0),
+    0,
+  );
 
-  // Nutrition summary
-  const todayMeals = nutritionLogs.filter((n) => n.date === today);
-  const todayCalories = todayMeals.reduce((a, n) => a + (n.calories || 0), 0);
-  const latestMeal = nutritionLogs.length > 0 ? nutritionLogs[0] : null;
+  // Date navigation helpers
+  const goDay = (offset: number) => {
+    const d = new Date(selectedDate);
+    d.setDate(d.getDate() + offset);
+    if (d.toISOString().split("T")[0] <= today) {
+      setSelectedDate(d.toISOString().split("T")[0]);
+    }
+  };
 
-  // Wellbeing summary
-  const todayWellbeing = wellbeingLogs.find((w) => w.date === today) || null;
+  const isToday = selectedDate === today;
 
   return (
     <div className="dashboard">
       <h1 className="dashboard-greeting">
         {getGreeting()}, {user?.firstName}!
       </h1>
+
+      <div className="dashboard-date-picker">
+        <button className="btn btn--ghost" onClick={() => goDay(-1)}>
+          ←
+        </button>
+        <input
+          type="date"
+          value={selectedDate}
+          max={today}
+          onChange={(e) => setSelectedDate(e.target.value)}
+          className="date-input"
+        />
+        <button
+          className="btn btn--ghost"
+          onClick={() => goDay(1)}
+          disabled={isToday}
+        >
+          →
+        </button>
+        {!isToday && (
+          <button
+            className="btn btn--ghost"
+            onClick={() => setSelectedDate(today)}
+          >
+            Today
+          </button>
+        )}
+      </div>
 
       <div className="dashboard-grid">
         {/* Workouts */}
@@ -99,18 +136,18 @@ export default function DashboardPage() {
             </div>
             <span className="summary-card-title">Workouts</span>
           </div>
-          {latestWorkout ? (
+          {dayWorkouts.length > 0 ? (
             <>
               <p className="summary-card-detail">
-                Latest: {latestWorkout.workoutType} —{" "}
-                {latestWorkout.durationMinutes} min
+                {dayWorkouts.map((w) => w.workoutType).join(", ")}
               </p>
               <p className="summary-card-stat">
-                {weekWorkouts.length} this week
+                {dayWorkouts.length} workout{dayWorkouts.length > 1 ? "s" : ""}{" "}
+                · {dayWorkouts.reduce((a, w) => a + w.durationMinutes, 0)} min
               </p>
             </>
           ) : (
-            <p className="summary-card-detail">No workouts logged yet</p>
+            <p className="summary-card-detail">No workouts this day</p>
           )}
         </div>
 
@@ -120,16 +157,18 @@ export default function DashboardPage() {
             <div className="summary-card-icon summary-card-icon--sleep">🌙</div>
             <span className="summary-card-title">Sleep</span>
           </div>
-          {latestSleep ? (
+          {daySleep.length > 0 ? (
             <>
               <p className="summary-card-detail">
-                Latest: {latestSleep.durationHours}h — Quality{" "}
-                {latestSleep.sleepQuality}/10
+                {daySleep[0].durationHours}h — Quality{" "}
+                {daySleep[0].sleepQuality}/10
               </p>
-              <p className="summary-card-stat">Avg quality: {avgQuality}/10</p>
+              <p className="summary-card-stat">
+                {daySleep[0].bedtime} → {daySleep[0].wakeTime}
+              </p>
             </>
           ) : (
-            <p className="summary-card-detail">No sleep logs yet</p>
+            <p className="summary-card-detail">No sleep logged this day</p>
           )}
         </div>
 
@@ -141,15 +180,16 @@ export default function DashboardPage() {
             </div>
             <span className="summary-card-title">Nutrition</span>
           </div>
-          {latestMeal ? (
+          {dayNutrition.length > 0 ? (
             <>
               <p className="summary-card-detail">
-                Latest: {latestMeal.mealType} — {latestMeal.description}
+                {dayNutrition.length} meal{dayNutrition.length > 1 ? "s" : ""}{" "}
+                logged
               </p>
-              <p className="summary-card-stat">{todayCalories} kcal today</p>
+              <p className="summary-card-stat">{dayCaloriesEaten} kcal</p>
             </>
           ) : (
-            <p className="summary-card-detail">No meals logged yet</p>
+            <p className="summary-card-detail">No meals logged this day</p>
           )}
         </div>
 
@@ -161,15 +201,36 @@ export default function DashboardPage() {
             </div>
             <span className="summary-card-title">Wellbeing</span>
           </div>
-          {todayWellbeing ? (
+          {dayWellbeing ? (
             <p className="summary-card-detail">
-              Mood {todayWellbeing.moodRating}/10 · Stress{" "}
-              {todayWellbeing.stressLevel}/10 · Energy{" "}
-              {todayWellbeing.energyLevel}/10
+              Mood {dayWellbeing.moodRating}/10 · Stress{" "}
+              {dayWellbeing.stressLevel}/10 · Energy {dayWellbeing.energyLevel}
+              /10
             </p>
           ) : (
-            <p className="summary-card-detail">No check-in today</p>
+            <p className="summary-card-detail">No check-in this day</p>
           )}
+        </div>
+
+        {/* Calorie Balance */}
+        <div className="summary-card summary-card--balance">
+          <div className="summary-card-header">
+            <div className="summary-card-icon summary-card-icon--balance">
+              ⚖️
+            </div>
+            <span className="summary-card-title">Calorie Balance</span>
+          </div>
+          <div className="balance-rows">
+            <p className="summary-card-detail">
+              Eaten: <strong>{dayCaloriesEaten} kcal</strong>
+            </p>
+            <p className="summary-card-detail">
+              Burned: <strong>{dayCaloriesBurned} kcal</strong>
+            </p>
+            <p className="summary-card-stat balance-net">
+              Net: {dayCaloriesEaten - dayCaloriesBurned} kcal
+            </p>
+          </div>
         </div>
       </div>
     </div>

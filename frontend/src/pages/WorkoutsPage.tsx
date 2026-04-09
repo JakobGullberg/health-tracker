@@ -37,7 +37,9 @@ export default function WorkoutsPage() {
   const fetchWorkouts = async () => {
     try {
       const data = await api.get<WorkoutResponse[]>("/workouts");
-      setWorkouts(data);
+      setWorkouts(
+        data.sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id),
+      );
     } catch {
       // silent
     } finally {
@@ -167,6 +169,7 @@ export default function WorkoutsPage() {
               id="date"
               type="date"
               value={form.date}
+              max={new Date().toISOString().split("T")[0]}
               onChange={(e) => setForm({ ...form, date: e.target.value })}
               required
             />

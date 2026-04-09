@@ -23,7 +23,9 @@ export default function SleepPage() {
   const fetchSleepLogs = async () => {
     try {
       const data = await api.get<SleepLogResponse[]>("/sleep-logs");
-      setSleepLogs(data);
+      setSleepLogs(
+        data.sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id),
+      );
     } catch {
       // silent
     } finally {
@@ -157,6 +159,7 @@ export default function SleepPage() {
               id="date"
               type="date"
               value={form.date}
+              max={new Date().toISOString().split("T")[0]}
               onChange={(e) => setForm({ ...form, date: e.target.value })}
               required
             />

@@ -28,7 +28,7 @@ export default function NutritionPage() {
   const fetchLogs = async () => {
     try {
       const data = await api.get<NutritionLogResponse[]>("/nutrition-logs");
-      setLogs(data);
+      setLogs(data.sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id));
     } catch {
       // silent
     } finally {
@@ -169,6 +169,7 @@ export default function NutritionPage() {
               id="date"
               type="date"
               value={form.date}
+              max={new Date().toISOString().split("T")[0]}
               onChange={(e) => setForm({ ...form, date: e.target.value })}
               required
             />
