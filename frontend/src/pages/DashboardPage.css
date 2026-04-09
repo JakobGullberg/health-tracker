@@ -1,0 +1,99 @@
+.dashboard {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.dashboard-greeting {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ---- Summary card ---- */
+.summary-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  cursor: pointer;
+  transition: box-shadow 0.15s;
+}
+
+.summary-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.summary-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.summary-card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.summary-card-icon--workout {
+  background-color: #ecfdf5;
+  color: #059669;
+}
+
+.summary-card-icon--sleep {
+  background-color: #eef2ff;
+  color: #4f46e5;
+}
+
+.summary-card-icon--nutrition {
+  background-color: #fff7ed;
+  color: #ea580c;
+}
+
+.summary-card-icon--wellbeing {
+  background-color: #faf5ff;
+  color: #9333ea;
+}
+
+.summary-card-title {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.summary-card-detail {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.summary-card-stat {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 0.25rem;
+}
+
+/* ---- Loading & empty states ---- */
+.dashboard-loading {
+  text-align: center;
+  padding: 3rem;
+  color: var(--color-text-muted);
+}
