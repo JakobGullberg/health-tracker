@@ -144,3 +144,133 @@
   padding: 3rem;
   color: var(--color-text-muted);
 }
+
+/* ── Weekly Overview Charts ─────────────────────────────── */
+
+.weekly-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.weekly-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .weekly-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (min-width: 960px) {
+  .weekly-grid {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
+.chart-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+.chart-card-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.25rem;
+  height: 120px;
+}
+
+.chart-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  height: 100%;
+}
+
+.chart-col--active .chart-label {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.chart-bars {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 2px;
+}
+
+.chart-bar {
+  width: 100%;
+  max-width: 18px;
+  min-height: 2px;
+  border-radius: 3px 3px 0 0;
+  transition: height 0.3s ease;
+}
+
+.chart-bar--eaten {
+  background-color: #f97316;
+}
+
+.chart-bar--burned {
+  background-color: #22c55e;
+}
+
+.chart-bar--sleep {
+  background-color: #6366f1;
+  max-width: 28px;
+}
+
+.chart-bar--mood {
+  background-color: #a855f7;
+  max-width: 28px;
+}
+
+.chart-label {
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+}
+
+.chart-legend {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.75rem;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.chart-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.chart-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.chart-dot--eaten {
+  background-color: #f97316;
+}
+
+.chart-dot--burned {
+  background-color: #22c55e;
+}

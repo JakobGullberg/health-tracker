@@ -93,6 +93,41 @@ export default function DashboardPage() {
 
   const isToday = selectedDate === today;
 
+  // ── Weekly overview data ─────────────────────────────────
+  const getWeekDays = (dateStr: string): string[] => {
+    const d = new Date(dateStr);
+    const day = d.getDay(); // 0=Sun
+    const mon = new Date(d);
+    mon.setDate(d.getDate() - ((day + 6) % 7)); // Monday
+    return Array.from({ length: 7 }, (_, i) => {
+      const date = new Date(mon);
+      date.setDate(mon.getDate() + i);
+      return date.toISOString().split("T")[0];
+    });
+  };
+
+  const weekDays = getWeekDays(selectedDate);
+  const dayLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+  const weekCaloriesEaten = weekDays.map((d) =>
+    nutritionLogs
+      .filter((n) => n.date === d)
+      .reduce((a, n) => a + (n.calories || 0), 0),
+  );
+  const weekCaloriesBurned = weekDays.map((d) =>
+    workouts
+      .filter((w) => w.date === d)
+      .reduce((a, w) => a + (w.caloriesBurned || 0), 0),
+  );
+  const weekSleepHours = weekDays.map((d) => {
+    const log = sleepLogs.find((s) => s.date === d);
+    return log ? log.durationHours : 0;
+  });
+  const weekMood = weekDays.map((d) => {
+    const log = wellbeingLogs.find((w) => w.date === d);
+    return log ? log.moodRating : 0;
+  });
+
   return (
     <div className="dashboard">
       <h1 className="dashboard-greeting">
@@ -233,6 +268,105 @@ export default function DashboardPage() {
             <p className="summary-card-stat balance-net">
               Net: {dayCaloriesEaten - dayCaloriesBurned} kcal
             </p>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Weekly Overview Charts ──────────────────────────── */}
+      <h2 className="weekly-title">Weekly Overview</h2>
+      <div className="weekly-grid">
+        {/* Calories Chart */}
+        <div className="chart-card">
+          <h3 className="chart-card-title">Calories (kcal)</h3>
+          <div className="chart">
+            {weekDays.map((d, i) => {
+              const eaten = weekCaloriesEaten[i];
+              const burned = weekCaloriesBurned[i];
+              const max = Math.max(
+                ...weekCaloriesEaten,
+                ...weekCaloriesBurned,
+                1,
+              );
+              return (
+                <div
+                  key={d}
+                  className={`chart-col ${d === selectedDate ? "chart-col--active" : ""}`}
+                >
+                  <div className="chart-bars">
+                    <div
+                      className="chart-bar chart-bar--eaten"
+                      style={{ height: `${(eaten / max) * 100}%` }}
+                      title={`Eaten: ${eaten} kcal`}
+                    />
+                    <div
+                      className="chart-bar chart-bar--burned"
+                      style={{ height: `${(burned / max) * 100}%` }}
+                      title={`Burned: ${burned} kcal`}
+                    />
+                  </div>
+                  <span className="chart-label">{dayLabels[i]}</span>
+                </div>
+              );
+            })}
+          </div>
+          <div className="chart-legend">
+            <span className="chart-legend-item">
+              <span className="chart-dot chart-dot--eaten" /> Eaten
+            </span>
+            <span className="chart-legend-item">
+              <span className="chart-dot chart-dot--burned" /> Burned
+            </span>
+          </div>
+        </div>
+
+        {/* Sleep Chart */}
+        <div className="chart-card">
+          <h3 className="chart-card-title">Sleep (hours)</h3>
+          <div className="chart">
+            {weekDays.map((d, i) => {
+              const hours = weekSleepHours[i];
+              const max = Math.max(...weekSleepHours, 1);
+              return (
+                <div
+                  key={d}
+                  className={`chart-col ${d === selectedDate ? "chart-col--active" : ""}`}
+                >
+                  <div className="chart-bars">
+                    <div
+                      className="chart-bar chart-bar--sleep"
+                      style={{ height: `${(hours / max) * 100}%` }}
+                      title={`${hours}h`}
+                    />
+                  </div>
+                  <span className="chart-label">{dayLabels[i]}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Mood Chart */}
+        <div className="chart-card">
+          <h3 className="chart-card-title">Mood (1–10)</h3>
+          <div className="chart">
+            {weekDays.map((d, i) => {
+              const mood = weekMood[i];
+              return (
+                <div
+                  key={d}
+                  className={`chart-col ${d === selectedDate ? "chart-col--active" : ""}`}
+                >
+                  <div className="chart-bars">
+                    <div
+                      className="chart-bar chart-bar--mood"
+                      style={{ height: `${(mood / 10) * 100}%` }}
+                      title={mood > 0 ? `Mood: ${mood}/10` : "No data"}
+                    />
+                  </div>
+                  <span className="chart-label">{dayLabels[i]}</span>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

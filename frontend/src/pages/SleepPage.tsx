@@ -24,6 +24,15 @@ export default function SleepPage() {
   const { notification, showSuccess, showError, dismiss } =
     useNotificationToast();
 
+  /** Calculate sleep duration in hours from bedtime → wakeTime (handles overnight). */
+  const calcDuration = (bedtime: string, wakeTime: string): number => {
+    const [bh, bm] = bedtime.split(":").map(Number);
+    const [wh, wm] = wakeTime.split(":").map(Number);
+    let mins = wh * 60 + wm - (bh * 60 + bm);
+    if (mins <= 0) mins += 24 * 60; // overnight
+    return Math.round((mins / 60) * 2) / 2; // round to nearest 0.5
+  };
+
   const fetchSleepLogs = async () => {
     try {
       const data = await api.get<SleepLogResponse[]>("/sleep-logs");
@@ -193,7 +202,14 @@ export default function SleepPage() {
                 id="bedtime"
                 type="time"
                 value={form.bedtime}
-                onChange={(e) => setForm({ ...form, bedtime: e.target.value })}
+                onChange={(e) => {
+                  const bedtime = e.target.value;
+                  setForm({
+                    ...form,
+                    bedtime,
+                    durationHours: calcDuration(bedtime, form.wakeTime),
+                  });
+                }}
                 required
               />
             </div>
@@ -203,7 +219,14 @@ export default function SleepPage() {
                 id="wakeTime"
                 type="time"
                 value={form.wakeTime}
-                onChange={(e) => setForm({ ...form, wakeTime: e.target.value })}
+                onChange={(e) => {
+                  const wakeTime = e.target.value;
+                  setForm({
+                    ...form,
+                    wakeTime,
+                    durationHours: calcDuration(form.bedtime, wakeTime),
+                  });
+                }}
                 required
               />
             </div>
@@ -211,17 +234,14 @@ export default function SleepPage() {
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="duration">Duration (hours)</label>
+              <label htmlFor="duration">Duration (auto)</label>
               <input
                 id="duration"
                 type="number"
                 min={0}
                 step={0.5}
                 value={form.durationHours}
-                onChange={(e) =>
-                  setForm({ ...form, durationHours: Number(e.target.value) })
-                }
-                required
+                readOnly
               />
             </div>
             <div className="form-group">
