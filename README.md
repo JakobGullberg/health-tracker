@@ -1,4 +1,4 @@
-# Health Tracker
+# HealthTracker
 
 A full-stack web application for tracking workouts, sleep, nutrition, and wellbeing.  
 Developed as a degree project (Examensarbete) by **Jakob Gullberg**, Java24.
