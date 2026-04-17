@@ -1,58 +1,70 @@
 # Health Tracker — Frontend
 
-React 19 + TypeScript frontend for the Health Tracker application.
+React + TypeScript SPA for the Health Tracker application.
 
-## Tech
+For full setup instructions, prerequisites, and how to run the complete application, see the [main README](../README.md) in the project root.
 
-- **React 19** with TypeScript
-- **Vite 8** for dev server and bundling
-- **React Router DOM** for client-side routing
-- **Custom CSS** — no UI library, uses CSS custom properties for theming
+## Quick Reference
 
-## Getting Started
+- **Framework:** React 19, TypeScript, Vite 8
+- **Routing:** React Router DOM
+- **Styling:** Custom CSS (no UI library)
+
+## Run
+
+Open a terminal in the `frontend/` folder and run:
 
 ```bash
-npm install    # install dependencies (first time only)
-npm run dev    # start dev server at http://localhost:5173
+npm install    # first time only
+npm run dev
+```
+
+See [main README — Step 3](../README.md#step-3--start-the-frontend) for detailed instructions.
+
+## Lint
+
+```bash
+npm run lint
 ```
 
 ## Build
 
 ```bash
-npm run build  # outputs to dist/
-npm run preview # preview production build locally
+npm run build      # output in dist/
+npm run preview    # preview production build locally
 ```
 
 ## Project Structure
 
 ```
 src/
-├── main.tsx                → App entry point
-├── App.tsx                 → Router setup with ProtectedRoute/PublicRoute
-├── index.css               → CSS reset + custom properties
-├── types.ts                → Shared TypeScript interfaces
+├── main.tsx                    → Application entry point
+├── App.tsx                     → Router setup and route guards
+├── index.css                   → Global styles and design tokens
+├── types.ts                    → Shared TypeScript interfaces
 ├── services/
-│   └── api.ts              → fetch wrapper with auto JWT injection
+│   └── api.ts                  → Fetch wrapper with automatic JWT injection
 ├── context/
-│   └── AuthContext.tsx      → Login/register/logout + token management
+│   └── AuthContext.tsx         → Authentication state and actions
 ├── hooks/
-│   └── useNotificationToast.ts → Success/error toast notifications
+│   └── useNotificationToast.ts → Toast state management
 ├── components/
-│   ├── AppLayout/          → Sidebar + main content wrapper
-│   ├── Sidebar/            → Navigation links + user info
-│   ├── Modal/              → Reusable modal (ESC-close, click-outside)
-│   └── NotificationToast/  → Toast notification component
+│   ├── AppLayout/              → Shared layout shell
+│   ├── Sidebar/                → Navigation and user panel
+│   ├── Modal/                  → Reusable modal component
+│   └── NotificationToast/      → Toast UI component
 └── pages/
-    ├── LoginPage.tsx        → Login/register form
-    ├── DashboardPage.tsx    → Date picker + summary cards
-    ├── WorkoutsPage.tsx     → Workout CRUD table + form
-    ├── SleepPage.tsx        → Sleep log CRUD table + form
-    ├── NutritionPage.tsx    → Nutrition log CRUD table + form
-    ├── WellbeingPage.tsx    → Wellbeing log CRUD (range sliders)
-    └── DataPage.css         → Shared CSS for all CRUD pages
+    ├── LoginPage.tsx           → Login and register page
+    ├── DashboardPage.tsx       → Daily summary overview
+    ├── WorkoutsPage.tsx        → Workout CRUD page
+    ├── SleepPage.tsx           → Sleep CRUD page
+    ├── NutritionPage.tsx       → Nutrition CRUD page
+    ├── WellbeingPage.tsx       → Wellbeing CRUD page
+    └── DataPage.css            → Shared page styling for CRUD views
 ```
 
-## Environment
+## Notes
 
-The API base URL is set to `http://localhost:8080/api` in `src/services/api.ts`.  
-Make sure the backend is running before starting the frontend.
+- The API base URL is set to `http://localhost:8080/api` in `src/services/api.ts`.
+- The backend must be running before the frontend can be used.
+- Login state is stored in `localStorage`.
